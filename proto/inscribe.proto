@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package proto;
+
+import "google/api/annotations.proto";
+
+option go_package = "/proto";
+
+service InscribeService {
+  // nft
+  rpc GenerateInscribeNFTParams(GenerateInscribeNFTParamsRequest) returns (GenerateInscribeNFTParamsResponse) {
+    option (google.api.http) = {
+      get: "/generate/inscribe/nft"
+    };
+  };
+
+  // general
+  rpc LaunchInscribe(LaunchInscribeRequest) returns (LaunchInscribeResponse) {
+    option (google.api.http) = {
+      post: "/generate/inscribe/launch"
+      body: "*"
+    };
+  };
+  rpc GetInscribeInfo(GetInscribeInfoRequest) returns (GetInscribeInfoResponse) {
+    option (google.api.http) = {
+      get: "/generate/inscribe/{order_id}"
+    };
+  };
+}
+
+message GenerateInscribeNFTParamsRequest{
+  int64 order_id = 1;
+  int64 token_id = 2;
+  int64 fee_rate = 3;
+}
+message GenerateInscribeNFTParamsResponse{
+  string receipt_address = 1;
+  int64 total_amount = 2;
+  int64 fee_rate = 3;
+  string network = 4;
+}
+
+message LaunchInscribeRequest{
+  int64 order_id = 1;
+}
+message LaunchInscribeResponse{}
+
+message GetInscribeInfoRequest{
+  int64 order_id = 1;
+}
+message GetInscribeInfoResponse{
+  int64 order_id = 1;
+  int64 token_id = 2;
+  string inscription_id = 3;
+  string commit_tx_hash = 4;
+  string reveal_tx_hash = 5;
+  string status = 6;
+}
