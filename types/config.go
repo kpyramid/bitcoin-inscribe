@@ -29,7 +29,6 @@ type Config struct {
 	OrderWalletMnemonic   string `env:"ORDER_WALLET_MNEMONIC"  envDefault:"" json:"order_wallet_mnemonic,omitempty"`
 	MempoolAddress        string `env:"MEMPOOL_ADDRESS" envDefault:"https://blockstream.info/testnet/api" json:"mempool_address"`
 	UnisatApiKey          string `env:"UNISAT_API_KEY" envDefault:"" json:"unisat_api_key"`
-	NFTCollectionInfo     string `env:"NFT_COLLECTION_INFO" envDefault:"eyIyIjoiaGVsbG8ifQ==" json:"nft_collection_info"`
 }
 
 func GetConfig() *Config {

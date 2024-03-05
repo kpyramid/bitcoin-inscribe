@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/btcsuite/btcd/btcutil"
+	"github.com/google/uuid"
 	"github.com/kpyramid/bitcoin-inscribe/proto"
 	"github.com/kpyramid/bitcoin-inscribe/types"
 	"github.com/kpyramid/bitcoin-inscribe/types/go-ord-tx/ord"
@@ -39,6 +40,9 @@ func (Inscribe) GenerateInscribeNFT(ctx context.Context, request *proto.Generate
 		return nil, err
 	}
 
+	// @TODO call contract get address
+	userAddressStr := "tbxx"
+
 	// calc fee
 	feeRate := request.FeeRate
 	if feeRate < 10 {
@@ -46,7 +50,7 @@ func (Inscribe) GenerateInscribeNFT(ctx context.Context, request *proto.Generate
 	}
 
 	// user address
-	userAddress, err := btcutil.DecodeAddress(request.UserAddress, svc.NetParams)
+	userAddress, err := btcutil.DecodeAddress(userAddressStr, svc.NetParams)
 	if err != nil {
 		return nil, err
 	}
@@ -58,8 +62,8 @@ func (Inscribe) GenerateInscribeNFT(ctx context.Context, request *proto.Generate
 
 	// save db
 	inscribeOrder := schema.InscribeOrder{
-		OrderId:              request.OrderId,
-		UserAddress:          request.UserAddress,
+		OrderId:              uuid.New().String(),
+		UserAddress:          userAddress.EncodeAddress(),
 		ReceiptAddress:       publicKey.EncodeAddress(),
 		ReceiptAddressNumber: hdNumber,
 		TotalAmount:          totalAmount,
@@ -87,7 +91,7 @@ func (Inscribe) GenerateInscribeNFT(ctx context.Context, request *proto.Generate
 func (Inscribe) LaunchInscribe(ctx context.Context, request *proto.LaunchInscribeRequest) (*proto.LaunchInscribeResponse, error) {
 	svc := types.GetServiceContext()
 	order := &schema.InscribeOrder{}
-	if err := svc.Db.Where("order_id = ?", request.OrderId).
+	if err := svc.Db.Where("token_id = ?", request.TokenId).
 		Where("status = ?", schema.OrderStatusPending).
 		First(order).Error; err != nil {
 		return nil, err
@@ -149,12 +153,11 @@ func (Inscribe) GetInscribeInfo(ctx context.Context, request *proto.GetInscribeI
 	svc := types.GetServiceContext()
 
 	inscribeOrder := schema.InscribeOrder{}
-	if err := svc.Db.Where("order_id = ?", request.OrderId).First(&inscribeOrder).Error; err != nil {
+	if err := svc.Db.Where("token_id = ?", request.TokenId).First(&inscribeOrder).Error; err != nil {
 		return nil, err
 	}
 
 	resp := proto.GetInscribeInfoResponse{
-		OrderId:       inscribeOrder.OrderId,
 		TokenId:       inscribeOrder.TokenId,
 		InscriptionId: inscribeOrder.InscriptionId,
 		CommitTxHash:  inscribeOrder.CommitTxHash,

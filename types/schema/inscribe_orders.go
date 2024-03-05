@@ -20,7 +20,7 @@ const (
 
 type InscribeOrder struct {
 	gorm.Model
-	OrderId              int64  `gorm:"column:order_id;type:bigint;not null;unique;" json:"order_id"`
+	OrderId              string `gorm:"column:order_id;type:varchar(255);not null;unique;" json:"order_id"`
 	UserAddress          string `gorm:"column:user_address;type:varchar(255);not null;index;" json:"user_address"`
 	ReceiptAddress       string `gorm:"column:receipt_address;type:varchar(255);not null;" json:"receipt_address"`
 	ReceiptAddressNumber int64  `gorm:"column:receipt_address_number;type:bigint;not null;unique;" json:"receipt_address_number"`
