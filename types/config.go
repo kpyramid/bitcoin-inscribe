@@ -25,7 +25,7 @@ type Config struct {
 	RpcHost               string `env:"RPC_HOST"  envDefault:"" json:"rpc_host,omitempty"`
 	RpcUser               string `env:"RPC_USER"  envDefault:"" json:"rpc_user,omitempty"`
 	RpcPass               string `env:"RPC_PASS"  envDefault:"" json:"rpc_pass,omitempty"`
-	MinFeeRate            int64  `env:"MIN_FEE_RATE" envDefault:"10"`
+	MinFeeRate            int64  `env:"MIN_FEE_RATE" envDefault:"1"`
 	OrderWalletMnemonic   string `env:"ORDER_WALLET_MNEMONIC"  envDefault:"" json:"order_wallet_mnemonic,omitempty"`
 	MempoolAddress        string `env:"MEMPOOL_ADDRESS" envDefault:"https://blockstream.info/testnet/api" json:"mempool_address"`
 	UnisatApiKey          string `env:"UNISAT_API_KEY" envDefault:"" json:"unisat_api_key"`

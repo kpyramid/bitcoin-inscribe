@@ -30,6 +30,7 @@ type InscribeOrder struct {
 	UserAddress          string `gorm:"column:user_address;type:varchar(255);not null;index;" json:"user_address"`
 	ReceiptAddress       string `gorm:"column:receipt_address;type:varchar(255);not null;" json:"receipt_address"`
 	ReceiptAddressNumber int64  `gorm:"column:receipt_address_number;type:bigint;not null;unique;" json:"receipt_address_number"`
+	TotalAmount          int64  `gorm:"column:total_amount;type:bigint;not null;" json:"total_amount"`
 	FeeRate              int64  `gorm:"column:fee_rate;type:bigint;not null;" json:"fee_rate"`
 	NetWork              string `gorm:"column:net_work;type:varchar(255);not null;" json:"net_work"`
 	TokenId              int64  `gorm:"column:token_id;type:bigint;not null;unique;" json:"token_id"`
