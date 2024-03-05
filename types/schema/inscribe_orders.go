@@ -8,14 +8,8 @@ const (
 	OrderStatusPending    = "Pending"
 	OrderStatusInscribing = "Inscribing"
 
-	OrderStatusCommitting      = "Committing"
 	OrderStatusCommitBroadcast = "CommitBroadcast"
-
-	OrderStatusRevealing       = "Revealing"
 	OrderStatusRevealBroadcast = "RevealBroadcast"
-
-	OrderStatusTransferring      = "Transferring"
-	OrderStatusTransferBroadcast = "TransferBroadcast"
 
 	OrderStatusUnConfirmed = "UnConfirmed"
 	OrderStatusSuccessful  = "Successful"
