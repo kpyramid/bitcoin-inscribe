@@ -27,8 +27,9 @@ type Config struct {
 	RpcPass               string `env:"RPC_PASS"  envDefault:"" json:"rpc_pass,omitempty"`
 	MinFeeRate            int64  `env:"MIN_FEE_RATE" envDefault:"10"`
 	OrderWalletMnemonic   string `env:"ORDER_WALLET_MNEMONIC"  envDefault:"" json:"order_wallet_mnemonic,omitempty"`
-	MempoolAddress        string `env:"MEMPOOL_ADDRESS" envDefault:"https://blockstream.info/testnet/api" json:"MEMPOOL_ADDRESS"`
-	UnisatApiKey          string `env:"UNISAT_API_KEY" envDefault:"" json:"UNISAT_API_KEY"`
+	MempoolAddress        string `env:"MEMPOOL_ADDRESS" envDefault:"https://blockstream.info/testnet/api" json:"mempool_address"`
+	UnisatApiKey          string `env:"UNISAT_API_KEY" envDefault:"" json:"unisat_api_key"`
+	MinimumReceiptAmount  int64  `env:"MINIMUM_RECEIPT_AMOUNT" envDefault:"250000" json:"minimum_receipt_amount"`
 }
 
 func GetConfig() *Config {

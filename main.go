@@ -7,6 +7,7 @@ import (
 	"github.com/kpyramid/bitcoin-inscribe/proto"
 	"github.com/kpyramid/bitcoin-inscribe/rpc"
 	"github.com/kpyramid/bitcoin-inscribe/types"
+	"github.com/kpyramid/bitcoin-inscribe/types/schema"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"io"
@@ -27,12 +28,17 @@ func init() {
 
 func main() {
 	svc := types.GetServiceContext()
-	_ = svc
 
+	// migrate
+	if err := svc.Db.AutoMigrate(&schema.InscribeOrder{}); err != nil {
+		log.Fatal(err)
+	}
+
+	// grpc
 	go func() { types.Server(registerGrpc, registerGateway) }()
 
+	// coroutine
 	if svc.Config.UseCoroutine {
-
 	}
 
 	// wait
