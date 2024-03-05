@@ -2,6 +2,7 @@ package types
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"github.com/btcsuite/btcd/btcec/v2"
@@ -14,7 +15,9 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+	"io"
 	"log"
+	"net/http"
 	"net/url"
 	"sync"
 	"time"
@@ -40,15 +43,16 @@ type PrivateMap struct {
 }
 
 type ServiceContext struct {
-	NetParams    *chaincfg.Params
-	Client       *rpcclient.Client
-	BtcApiClient *mempool.MempoolClient
-	UnisatClient *service.UnisatClient
-	Config       *Config
-	Wallet       *HDWallet
-	Redis        redis.Cmdable
-	Db           *gorm.DB
-	QuitMutex    *sync.Mutex
+	NetParams         *chaincfg.Params
+	Client            *rpcclient.Client
+	BtcApiClient      *mempool.MempoolClient
+	UnisatClient      *service.UnisatClient
+	Config            *Config
+	Wallet            *HDWallet
+	Redis             redis.Cmdable
+	Db                *gorm.DB
+	NFTCollectionInfo map[int64]string
+	QuitMutex         *sync.Mutex
 }
 
 func GetServiceContext() *ServiceContext {
@@ -109,18 +113,50 @@ func GetServiceContext() *ServiceContext {
 			log.Fatal(err)
 		}
 
+		// parse nft information
+		nftCollectionInfo := make(map[int64]string)
+		{
+			var contentBz []byte
+
+			parsedUrl, err := url.Parse(cfg.NFTCollectionInfo)
+			if err != nil || parsedUrl.Scheme == "" {
+				contentBz, err = base64.StdEncoding.DecodeString(cfg.NFTCollectionInfo)
+				if err != nil {
+					log.Fatal("invalid base64 collection info")
+				}
+			} else {
+
+				resp, err := http.Get(cfg.NFTCollectionInfo)
+				if err != nil {
+					log.Fatalf("get nft collection failed. error :%s", err)
+				}
+				if resp.StatusCode != http.StatusOK {
+					log.Fatalf("get nft collection failed. status code :%s", resp.StatusCode)
+				}
+
+				contentBz, err = io.ReadAll(resp.Body)
+				if err != nil {
+					log.Fatalf("get nft collection body failed. err :%s", err)
+				}
+			}
+			if err := json.Unmarshal(contentBz, &nftCollectionInfo); err != nil {
+				log.Fatalf("invalid collection json format. err :%s", err)
+			}
+		}
+
 		// unisat
 		unisatClient := service.NewUnisatClient(netParams, cfg.UnisatApiKey)
 		_service = &ServiceContext{
-			NetParams:    netParams,
-			Client:       client,
-			BtcApiClient: mempool.NewClient(cfg.MempoolAddress, netParams),
-			Wallet:       wallet,
-			Config:       cfg,
-			Redis:        GetClient(),
-			UnisatClient: unisatClient,
-			Db:           Db,
-			QuitMutex:    &sync.Mutex{},
+			NetParams:         netParams,
+			Client:            client,
+			BtcApiClient:      mempool.NewClient(cfg.MempoolAddress, netParams),
+			Wallet:            wallet,
+			Config:            cfg,
+			Redis:             GetClient(),
+			UnisatClient:      unisatClient,
+			Db:                Db,
+			NFTCollectionInfo: nftCollectionInfo,
+			QuitMutex:         &sync.Mutex{},
 		}
 	})
 
