@@ -11,7 +11,7 @@ func TestInscribe(t *testing.T) {
 	svc := types.GetServiceContext()
 
 	order := schema.InscribeOrder{}
-	if err := svc.Db.Where("id = ?", 1).First(&order).Error; err != nil {
+	if err := svc.Db.Where("status = ?", schema.OrderStatusInscribing).First(&order).Error; err != nil {
 		log.Fatal(err)
 	}
 

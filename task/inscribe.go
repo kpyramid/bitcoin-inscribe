@@ -1,6 +1,7 @@
 package task
 
 import (
+	"context"
 	"fmt"
 	"github.com/btcsuite/btcd/btcec/v2"
 	"github.com/btcsuite/btcd/btcutil"
@@ -11,6 +12,7 @@ import (
 	"github.com/kpyramid/bitcoin-inscribe/types/schema"
 	"github.com/kpyramid/bitcoin-inscribe/types/wrap"
 	log "github.com/sirupsen/logrus"
+	"strconv"
 )
 
 func inscribeOrder(svc *types.ServiceContext, order *schema.InscribeOrder) error {
@@ -123,5 +125,9 @@ func inscribeOrder(svc *types.ServiceContext, order *schema.InscribeOrder) error
 }
 
 func pickNFTTokenID(svc *types.ServiceContext, tokenId int64) (string, error) {
-	return "hello", nil
+	result, err := svc.Redis.HGet(context.TODO(), types.OrderNFTDetail, strconv.FormatInt(tokenId, 10)).Result()
+	if err != nil {
+		return "", wrap.WithErrorf("get nft detail failed. error: %s, token_id: %d", err, tokenId)
+	}
+	return result, nil
 }

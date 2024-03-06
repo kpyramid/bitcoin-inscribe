@@ -193,7 +193,7 @@ func estimateNFTTotalAmount(svc *types.ServiceContext, userAddress btcutil.Addre
 	var changeMinimumSats int64 = 800
 
 	// reveal + witness
-	var nftTxVirtualSize int64 = 72
+	var nftTxVirtualSize int64 = 407
 
 	var commitSize, revealSize int64
 	switch userAddress.(type) {

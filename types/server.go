@@ -169,7 +169,7 @@ func protoErrorHandle(ctx context.Context, mux *runtime.ServeMux, marshaler runt
 		writer.WriteHeader(http.StatusUnauthorized)
 	} else {
 		// set status
-		writer.WriteHeader(runtime.HTTPStatusFromCode(s.Code()))
+		writer.WriteHeader(runtime.HTTPStatusFromCode(codes.InvalidArgument))
 	}
 
 	_, _ = writer.Write(buf)
