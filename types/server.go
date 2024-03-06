@@ -161,7 +161,7 @@ func protoErrorHandle(ctx context.Context, mux *runtime.ServeMux, marshaler runt
 
 	buf, merr := marshaler.Marshal(body)
 	if merr != nil {
-		writer.WriteHeader(http.StatusInternalServerError)
+		writer.WriteHeader(http.StatusUnprocessableEntity)
 		_, _ = writer.Write([]byte(merr.Error()))
 		return
 	}

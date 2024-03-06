@@ -7,11 +7,13 @@ import (
 	"github.com/google/uuid"
 	"github.com/kpyramid/bitcoin-inscribe/proto"
 	"github.com/kpyramid/bitcoin-inscribe/types"
+	"github.com/kpyramid/bitcoin-inscribe/types/b2"
 	"github.com/kpyramid/bitcoin-inscribe/types/go-ord-tx/ord"
 	"github.com/kpyramid/bitcoin-inscribe/types/go-ord-tx/pkg/btcapi"
 	"github.com/kpyramid/bitcoin-inscribe/types/schema"
 	"github.com/kpyramid/bitcoin-inscribe/types/wrap"
 	log "github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 )
 
 type Inscribe struct {
@@ -21,13 +23,34 @@ type Inscribe struct {
 func (Inscribe) GenerateInscribeNFT(ctx context.Context, request *proto.GenerateInscribeNFTRequest) (*proto.GenerateInscribeNFTResponse, error) {
 	svc := types.GetServiceContext()
 
-	// create order account
-	hdNumber, err := svc.Redis.Incr(context.TODO(), types.OrderWalletRedisKey).Result()
-	if err != nil {
-		return nil, err
+	inscribeOrder := schema.InscribeOrder{
+		Status: schema.OrderStatusPending,
 	}
 
-	orderPrivateKeyHex, err := svc.Wallet.Generate(uint32(hdNumber))
+	// validate exist order
+	if err := svc.Db.Where("token_id = ?", request.TokenId).First(&inscribeOrder).Error; err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
+	switch inscribeOrder.Status {
+	case schema.OrderStatusFailure:
+		fallthrough
+	case schema.OrderStatusClosed:
+		inscribeOrder.Status = schema.OrderStatusPending
+	}
+	if inscribeOrder.Status != schema.OrderStatusPending {
+		return nil, fmt.Errorf("inscribe order in process")
+	}
+
+	if inscribeOrder.ReceiptAddressNumber == 0 {
+		// create order wallet
+		hdNumber, err := svc.Redis.Incr(context.TODO(), types.OrderWalletRedisKey).Result()
+		if err != nil {
+			return nil, err
+		}
+		inscribeOrder.ReceiptAddressNumber = hdNumber
+	}
+
+	orderPrivateKeyHex, err := svc.Wallet.Generate(uint32(inscribeOrder.ReceiptAddressNumber))
 	if err != nil {
 		return nil, err
 	}
@@ -39,9 +62,10 @@ func (Inscribe) GenerateInscribeNFT(ctx context.Context, request *proto.Generate
 	if err != nil {
 		return nil, err
 	}
-
-	// @TODO call contract get address
-	userAddressStr := "tbxx"
+	userAddressStr, err := b2.GetLockAddress(svc, request.TokenId)
+	if err != nil {
+		return nil, fmt.Errorf("get btc mainnet locker address failed. error: %s", err)
+	}
 
 	// calc fee
 	feeRate := request.FeeRate
@@ -61,18 +85,15 @@ func (Inscribe) GenerateInscribeNFT(ctx context.Context, request *proto.Generate
 	}
 
 	// save db
-	inscribeOrder := schema.InscribeOrder{
-		OrderId:              uuid.New().String(),
-		UserAddress:          userAddress.EncodeAddress(),
-		ReceiptAddress:       publicKey.EncodeAddress(),
-		ReceiptAddressNumber: hdNumber,
-		TotalAmount:          totalAmount,
-		FeeRate:              request.FeeRate,
-		NetWork:              svc.NetParams.Name,
-		TokenId:              request.TokenId,
-		Status:               schema.OrderStatusPending,
-	}
-	if err := svc.Db.Create(&inscribeOrder).Error; err != nil {
+	inscribeOrder.OrderId = uuid.New().String()
+	inscribeOrder.UserAddress = userAddress.EncodeAddress()
+	inscribeOrder.ReceiptAddress = publicKey.EncodeAddress()
+	inscribeOrder.TotalAmount = totalAmount
+	inscribeOrder.FeeRate = request.FeeRate
+	inscribeOrder.NetWork = svc.NetParams.Name
+	inscribeOrder.TokenId = request.TokenId
+	inscribeOrder.Status = schema.OrderStatusPending
+	if err := svc.Db.Save(&inscribeOrder).Error; err != nil {
 		return nil, err
 	}
 
@@ -84,7 +105,7 @@ func (Inscribe) GenerateInscribeNFT(ctx context.Context, request *proto.Generate
 		Network:        svc.NetParams.Name,
 	}
 
-	log.Infof("generate order wallet. address: %s, number: %d, amount: %d, fee_rate: %d", publicKey.EncodeAddress(), hdNumber, totalAmount, feeRate)
+	log.Infof("generate order wallet. address: %s, number: %d, amount: %d, fee_rate: %d", publicKey.EncodeAddress(), inscribeOrder.ReceiptAddressNumber, totalAmount, feeRate)
 	return resp, nil
 }
 
@@ -132,10 +153,9 @@ func (Inscribe) LaunchInscribe(ctx context.Context, request *proto.LaunchInscrib
 		log.Errorf("order amount is zero; order: %v", order)
 		return nil, fmt.Errorf("fee rate too small. fee_rate: %d", order.FeeRate)
 	}
-	// @TIP none-public mint not necessary
-	// if err := types.ValidateReceiptUTXO(svc, payAmount.Outpoint, order.FeeRate); err != nil {
-	// 	return nil, err
-	// }
+	if err := types.ValidateReceiptUTXO(svc, payAmount.Outpoint, order.FeeRate); err != nil {
+		return nil, err
+	}
 
 	// update status
 	result := svc.Db.Model(&schema.InscribeOrder{}).Where("id = ?", order.Model.ID).

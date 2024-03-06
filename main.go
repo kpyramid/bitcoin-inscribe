@@ -6,6 +6,7 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/kpyramid/bitcoin-inscribe/proto"
 	"github.com/kpyramid/bitcoin-inscribe/rpc"
+	"github.com/kpyramid/bitcoin-inscribe/task"
 	"github.com/kpyramid/bitcoin-inscribe/types"
 	"github.com/kpyramid/bitcoin-inscribe/types/schema"
 	log "github.com/sirupsen/logrus"
@@ -39,6 +40,7 @@ func main() {
 
 	// coroutine
 	if svc.Config.UseCoroutine {
+		go task.HandleDispatcher(svc)
 	}
 
 	// wait

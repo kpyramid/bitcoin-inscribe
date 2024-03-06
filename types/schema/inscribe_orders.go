@@ -15,7 +15,7 @@ const (
 	OrderStatusSuccessful  = "Successful"
 
 	OrderStatusFailure = "Failure"
-	OrderStatusExpired = "Closed"
+	OrderStatusClosed  = "Closed"
 )
 
 type InscribeOrder struct {

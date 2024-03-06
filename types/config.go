@@ -29,6 +29,10 @@ type Config struct {
 	OrderWalletMnemonic   string `env:"ORDER_WALLET_MNEMONIC"  envDefault:"" json:"order_wallet_mnemonic,omitempty"`
 	MempoolAddress        string `env:"MEMPOOL_ADDRESS" envDefault:"https://blockstream.info/testnet/api" json:"mempool_address"`
 	UnisatApiKey          string `env:"UNISAT_API_KEY" envDefault:"" json:"unisat_api_key"`
+
+	// b2
+	B2RpcEndpoint     string `env:"B2RPC_ENDPOINT" envDefault:"https://haven-rpc.bsquared.network" json:"b2rpc_endpoint"`
+	B2ContractAddress string `env:"B2_CONTRACT_ADDRESS" envDefault:"0xA40A5da41EeEC122D0Fff780194733a9D1a6F298" json:"b2_contract_address"`
 }
 
 func GetConfig() *Config {

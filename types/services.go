@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcd/rpcclient"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/kpyramid/bitcoin-inscribe/types/go-ord-tx/pkg/btcapi/mempool"
 	"github.com/kpyramid/bitcoin-inscribe/types/service"
 	"github.com/redis/go-redis/v9"
@@ -29,6 +30,7 @@ type ServiceContext struct {
 	Client       *rpcclient.Client
 	BtcApiClient *mempool.MempoolClient
 	UnisatClient *service.UnisatClient
+	B2Client     *ethclient.Client
 	Config       *Config
 	Wallet       *HDWallet
 	Redis        redis.Cmdable
@@ -94,12 +96,19 @@ func GetServiceContext() *ServiceContext {
 			log.Fatal(err)
 		}
 
+		// b2 network
+		b2Client, err := ethclient.Dial(cfg.B2RpcEndpoint)
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		// unisat
 		unisatClient := service.NewUnisatClient(netParams, cfg.UnisatApiKey)
 		_service = &ServiceContext{
 			NetParams:    netParams,
 			Client:       client,
 			BtcApiClient: mempool.NewClient(cfg.MempoolAddress, netParams),
+			B2Client:     b2Client,
 			Wallet:       wallet,
 			Config:       cfg,
 			Redis:        GetClient(),
