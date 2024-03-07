@@ -23,4 +23,3 @@ go.work
 proto/*.go
 /log
 /.idea
-test
