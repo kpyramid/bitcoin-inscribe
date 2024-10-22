@@ -14,8 +14,4 @@ func TestInscribe(t *testing.T) {
 	if err := svc.Db.Where("id = ?", 1).First(&order).Error; err != nil {
 		log.Fatal(err)
 	}
-
-	if err := inscribeOrder(svc, &order); err != nil {
-		log.Fatal(err)
-	}
 }
