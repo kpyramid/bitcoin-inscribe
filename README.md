@@ -8,14 +8,14 @@ The tool supports single or multiple inscriptions in all input of the transactio
 
 # Installation
 ```
-go get github.com/balletcrypto/bitcoin-inscription-parser
+go get github.com/kpyramid/bitcoin-inscribe
 ```
 # Example
 ```go
 package main
 
 import (
-	"github.com/balletcrypto/bitcoin-inscription-parser/parser"
+	"github.com/kpyramid/bitcoin-inscribe"
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
 	"github.com/btcsuite/btcd/rpcclient"
 	log "github.com/sirupsen/logrus"
