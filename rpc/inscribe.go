@@ -132,10 +132,6 @@ func (Inscribe) LaunchInscribe(ctx context.Context, request *proto.LaunchInscrib
 		log.Errorf("order amount is zero; order: %v", order)
 		return nil, fmt.Errorf("fee rate too small. fee_rate: %d", order.FeeRate)
 	}
-	// @TIP none-public mint not necessary
-	// if err := types.ValidateReceiptUTXO(svc, payAmount.Outpoint, order.FeeRate); err != nil {
-	// 	return nil, err
-	// }
 
 	// update status
 	result := svc.Db.Model(&schema.InscribeOrder{}).Where("id = ?", order.Model.ID).
